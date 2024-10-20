@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model channels {
+  id                Int                @id @default(autoincrement())
+  twitch_channel_id Int                @unique(map: "twitch_channel_id")
+  name              String             @db.Text
+  profile_image_url String             @db.Text
+  followers_count   Int
+  channels_records  channels_records[]
+  streams           streams[]
+}
+
+model channels_records {
+  id              Int      @id @default(autoincrement())
+  channel_id      Int
+  followers_count Int
+  timestamp       DateTime @default(now()) @db.Timestamp(0)
+  channels        channels @relation(fields: [channel_id], references: [id], onDelete: Cascade, map: "fk_channels_record_channels")
+
+  @@index([channel_id], map: "fk_channels_record_channels")
+}
+
+model games {
+  id              Int               @id @default(autoincrement())
+  twitch_game_id  Int               @unique(map: "twitch_game_id")
+  game_image_url  String            @db.Text
+  name            String            @db.Text
+  games_records   games_records[]
+  streams_records streams_records[]
+}
+
+model games_records {
+  id            Int      @id @default(autoincrement())
+  game_id       Int
+  total_streams Int
+  total_viewers Int
+  timestamp     DateTime @default(now()) @db.DateTime(0)
+  games         games    @relation(fields: [game_id], references: [id], onDelete: Cascade, map: "fk_games_records_games")
+
+  @@index([game_id], map: "fk_games_records_games")
+}
+
+model streams {
+  id              Int               @id @default(autoincrement())
+  channel_id      Int
+  start_date      DateTime          @default(now()) @db.DateTime(0)
+  end_date        DateTime?         @db.DateTime(0)
+  channels        channels          @relation(fields: [channel_id], references: [id], onDelete: Cascade, map: "fk_streams_channels")
+  streams_records streams_records[]
+
+  @@index([channel_id], map: "fk_streams_channels")
+  @@unique([channel_id, start_date])
+}
+
+model streams_records {
+  id           Int      @id @default(autoincrement())
+  stream_id    Int
+  viewer_count Int
+  title        String   @db.Text
+  game_id      Int
+  timestamp    DateTime @default(now()) @db.DateTime(0)
+  games        games    @relation(fields: [game_id], references: [id], onDelete: Cascade, map: "fk_streams_records_games")
+  streams      streams  @relation(fields: [stream_id], references: [id], onDelete: Cascade, map: "fk_streams_records_streams")
+
+  @@index([game_id], map: "fk_streams_records_games")
+  @@index([stream_id], map: "fk_streams_records_streams")
+}
