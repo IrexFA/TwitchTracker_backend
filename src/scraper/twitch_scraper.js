@@ -283,7 +283,7 @@ async function fetchTwitchDataAndUpdateEndDates() {
     await getTopStreams(access_token);
 }
 
-cron.schedule('*/1 * * * *', async () => {
+cron.schedule('*/10 * * * *', async () => {
     try {
         console.log('Début de la tâche cron - récupération des données Twitch et mise à jour des end_dates');
         await fetchTwitchDataAndUpdateEndDates();
