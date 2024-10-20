@@ -231,7 +231,7 @@ async function getGamesInfo(access_token) {
 
 
 async function updateStreamEndDates() {
-    const INTERVAL = 2 * 1000;
+    const INTERVAL = 60 * 1000;
     const access_token = await getTwitchToken();
     const headers = {
         Authorization: `Bearer ${access_token}`,
