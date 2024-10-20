@@ -5,7 +5,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "api": "nodemon index.js",
-    "scraper": "node src/scraper/twitch_scraper.js"
+    "scraper": "node src/scraper/twitch_scraper.js",
+    "migrate": "npx prisma migrate deploy",
+    "prisma:generate": "npx prisma generate"
   },
   "author": "",
   "license": "ISC",

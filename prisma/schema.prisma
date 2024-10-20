@@ -55,8 +55,8 @@ model streams {
   channels        channels          @relation(fields: [channel_id], references: [id], onDelete: Cascade, map: "fk_streams_channels")
   streams_records streams_records[]
 
-  @@index([channel_id], map: "fk_streams_channels")
   @@unique([channel_id, start_date])
+  @@index([channel_id], map: "fk_streams_channels")
 }
 
 model streams_records {
