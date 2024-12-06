@@ -7,7 +7,22 @@ const gamesRouter = express.Router();
 
 gamesRouter.get('/', async (req, res) => {
     try {
+        // pagination
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 100;
+
+        if (page < 1) {
+            return res.status(400).json({ error: 'Le paramètre page doit être un entier positif.' });
+        }
+
+        const skip = (page - 1) * limit;
+
         const games = await prisma.games.findMany({
+            skip: skip,
+            take: limit,
+            orderBy: {
+                currentViewers: "desc"
+            },
             include: {
                 games_records: {
                     orderBy: { timestamp: 'desc' },
@@ -15,6 +30,10 @@ gamesRouter.get('/', async (req, res) => {
                 },
             },
         });
+
+        const totalGames = await prisma.games.count();
+
+        const totalPages = Math.ceil(totalGames / limit);
 
         const totalViewersAcrossGames = games.reduce((sum, game) => {
             const latestRecord = game.games_records[0];
@@ -44,7 +63,15 @@ gamesRouter.get('/', async (req, res) => {
 
         filteredGameStats.sort((a, b) => b.currentViewers - a.currentViewers);
 
-        res.json(filteredGameStats);
+        res.json({
+            data: filteredGameStats,
+            meta: {
+                totalItems: totalGames,
+                totalPages: totalPages,
+                currentPage: page,
+                perPage: limit,
+            },
+        });
     } catch (error) {
         res.status(500).json({ error: "Erreur lors de la récupération des statistiques des jeux." });
     }
