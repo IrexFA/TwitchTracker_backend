@@ -9,7 +9,7 @@ gamesRouter.get('/', async (req, res) => {
     try {
         // pagination
         const page = parseInt(req.query.page) || 1;
-        const limit = 100;
+        const limit = parseInt(req.query.limit) || 100;
 
         if (page < 1) {
             return res.status(400).json({ error: 'Le paramètre page doit être un entier positif.' });
@@ -21,7 +21,7 @@ gamesRouter.get('/', async (req, res) => {
             skip: skip,
             take: limit,
             orderBy: {
-                followers_count: "desc"
+                currentViewers: "desc"
             },
             include: {
                 games_records: {
