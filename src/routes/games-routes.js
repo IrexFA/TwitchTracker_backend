@@ -6,42 +6,50 @@ const prisma = new PrismaClient();
 const gamesRouter = express.Router();
 
 gamesRouter.get('/', async (req, res) => {
-    const games = await prisma.games.findMany({
-        include: {
-            games_records: true,
-        },
-    });
-
-    const totalViewersAcrossGames = games.reduce((sum, game) => {
-        const latestRecord = game.games_records.sort((a, b) => b.timestamp - a.timestamp)[0];
-        return sum + (latestRecord ? latestRecord.total_viewers : 0);
-    }, 0);
-
-    const gameStats = await Promise.all(games.map(async (game) => {
-        const totalViewers = game.games_records.reduce((sum, record) => sum + record.total_viewers, 0);
-        const avgViewers = totalViewers / game.games_records.length || 0;
-        const totalStreams = game.games_records.reduce((sum, record) => sum + record.total_streams, 0);
-
-        const latestRecord = await prisma.games_records.findFirst({
-            where: { game_id: game.id },
-            orderBy: { timestamp: 'desc' },
+    try {
+        const games = await prisma.games.findMany({
+            include: {
+                games_records: {
+                    orderBy: { timestamp: 'desc' },
+                    take: 1,
+                },
+            },
         });
-        const currentViewers = latestRecord ? latestRecord.total_viewers : 0;
-        const twitchShare = ((currentViewers / totalViewersAcrossGames) * 100).toFixed(2) || 0;
 
-        return {
-            id: game.id,
-            name: game.name,
-            image_url: game.game_image_url,
-            avgViewers: parseFloat(avgViewers.toFixed(1)),
-            totalStreams,
-            twitchShare: parseFloat(twitchShare),
-            currentViewers,
-        };
-    }));
+        const totalViewersAcrossGames = games.reduce((sum, game) => {
+            const latestRecord = game.games_records[0];
+            return sum + (latestRecord ? latestRecord.total_viewers : 0);
+        }, 0);
 
-    res.json(gameStats);
+        const gameStats = games.map((game) => {
+            const latestRecord = game.games_records[0];
+
+            if (!latestRecord) {
+                return null;
+            }
+
+            const twitchShare = ((latestRecord.total_viewers / totalViewersAcrossGames) * 100).toFixed(2) || 0;
+
+            return {
+                id: game.id,
+                name: game.name,
+                image_url: game.game_image_url.replace('{width}', '210').replace('{height}', '280'), // Ajuster les dimensions des images
+                currentViewers: latestRecord.total_viewers || 0,
+                totalStreams: latestRecord.total_streams || 0,
+                twitchShare: parseFloat(twitchShare),
+            };
+        });
+
+        const filteredGameStats = gameStats.filter((game) => game !== null);
+
+        filteredGameStats.sort((a, b) => b.currentViewers - a.currentViewers);
+
+        res.json(filteredGameStats);
+    } catch (error) {
+        res.status(500).json({ error: "Erreur lors de la récupération des statistiques des jeux." });
+    }
 });
+
 
 gamesRouter.get('/:id', async (req, res) => {
     const { id } = req.params;
