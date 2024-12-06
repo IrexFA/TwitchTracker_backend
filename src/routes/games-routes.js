@@ -66,6 +66,8 @@ gamesRouter.get('/:id', async (req, res) => {
         orderBy: { timestamp: 'desc' },
     });
 
+    const thumbnailUrl = game.game_image_url.replace('{width}', '210').replace('{height}', '280');
+
     const currentViewers = latestRecord ? latestRecord.total_viewers : 0;
     const nCurrentLiveChannels = latestRecord ? latestRecord.total_streams : 0;
 
@@ -73,7 +75,14 @@ gamesRouter.get('/:id', async (req, res) => {
         where: { game_id: parseInt(id) },
     });
 
-    res.json({ id: game.id, name: game.name, image_url: game.game_image_url, live_viewers: currentViewers, live_channels: nCurrentLiveChannels, records: gameRecords });
+    res.json({
+        id: game.id,
+        name: game.name,
+        image_url: thumbnailUrl,
+        live_viewers: currentViewers,
+        live_channels: nCurrentLiveChannels,
+        records: gameRecords
+    });
 });
 
 module.exports = gamesRouter;
