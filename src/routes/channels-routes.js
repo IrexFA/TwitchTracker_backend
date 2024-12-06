@@ -31,7 +31,6 @@ channelsRouter.get('/', async (req, res) => {
         res.json({
             data: channels,
             meta: {
-                totalItems: totalChannels,
                 totalPages: totalPages,
                 currentPage: page,
                 perPage: limit,

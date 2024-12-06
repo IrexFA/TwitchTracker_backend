@@ -16,7 +16,9 @@ io.on("connection", (socket) => {
     });
 
     socket.on("chatMessage", ({ text, channelId, author }) => {
-        const message = { author, text, timestamp: new Date().toISOString() };
+        const message = { author, text, timestamp: new Date().toLocaleString() };
+
+        console.log(`[+] ${message.timestamp} - Received message from ${message.author} (Channel: ${channelId}) : ${message.text}`)
 
         if (!messageHistory[channelId]) {
             messageHistory[channelId] = [];
