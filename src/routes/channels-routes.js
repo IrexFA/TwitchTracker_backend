@@ -37,7 +37,7 @@ channelsRouter.get('/', async (req, res) => {
             },
         });
     } catch (error) {
-        res.status(500).json({ error: 'Erreur lors de la récupération des chaînes' });
+        res.status(500).json({ error: 'Erreur lors de la récupération des chaînes : ' + error });
     }
 });
 
@@ -68,7 +68,7 @@ channelsRouter.get('/active', async (req, res) => {
 
         res.json(activeChannels);
     } catch (error) {
-        res.status(500).json({ error: "Erreur lors de la récupération des streams actifs." });
+        res.status(500).json({ error: "Erreur lors de la récupération des streams actifs : " + error });
     }
 });
 
