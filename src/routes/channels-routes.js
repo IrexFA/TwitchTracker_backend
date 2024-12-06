@@ -45,29 +45,36 @@ channelsRouter.get('/', async (req, res) => {
 channelsRouter.get('/active', async (req, res) => {
     try {
         const activeStreams = await prisma.streams.findMany({
-            include: {
-                streams_records: {
-                    orderBy: { timestamp: "desc" },
-                    take: 1,
-                },
-                channels: true,
-            },
             where: {
                 end_date: null,
             },
+            include: {
+                streams_records: true,
+                channels: true,
+            },
         });
 
-        const activeChannels = activeStreams.map((stream) => {
-            const latestRecord = stream.streams_records[0];
-            return {
+        const uniqueActiveChannels = [];
+        const seenChannels = new Set();
+
+        for (const stream of activeStreams) {
+            const latestRecord = stream.streams_records.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+
+            if (!latestRecord || seenChannels.has(stream.channels.id)) {
+                continue;
+            }
+
+            seenChannels.add(stream.channels.id);
+
+            uniqueActiveChannels.push({
                 id: stream.channels.id,
                 name: stream.channels.name,
                 image_url: stream.channels.profile_image_url,
-                currentViewers: latestRecord ? latestRecord.viewer_count : 0,
-            };
-        });
+                currentViewers: latestRecord.viewer_count,
+            });
+        }
 
-        res.json(activeChannels);
+        res.json(uniqueActiveChannels);
     } catch (error) {
         res.status(500).json({ error: "Erreur lors de la récupération des streams actifs." });
     }
