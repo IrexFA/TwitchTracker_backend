@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors');
 const app = express()
+const socketServer = require('./src/sockets/channelSockets');
 
 const channelsRouter = require('./src/routes/channels-routes');
 const gamesRouter = require('./src/routes/games-routes');
