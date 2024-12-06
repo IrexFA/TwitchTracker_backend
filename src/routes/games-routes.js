@@ -73,7 +73,7 @@ gamesRouter.get('/', async (req, res) => {
             },
         });
     } catch (error) {
-        res.status(500).json({ error: "Erreur lors de la récupération des statistiques des jeux." });
+        res.status(500).json({ error: "Erreur lors de la récupération des statistiques des jeux : " + error });
     }
 });
 
