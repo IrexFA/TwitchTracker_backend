@@ -8,7 +8,7 @@ const channelsRouter = express.Router();
 channelsRouter.get('/', async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = 100;
+        const limit = 20;
 
         if (page < 1) {
             return res.status(400).json({ error: 'Le paramètre page doit être un entier positif.' });
