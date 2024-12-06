@@ -20,9 +20,6 @@ gamesRouter.get('/', async (req, res) => {
         const games = await prisma.games.findMany({
             skip: skip,
             take: limit,
-            orderBy: {
-                currentViewers: "desc"
-            },
             include: {
                 games_records: {
                     orderBy: { timestamp: 'desc' },
